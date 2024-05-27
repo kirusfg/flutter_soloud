@@ -7,7 +7,6 @@ import 'package:flutter_soloud/flutter_soloud.dart';
 import 'package:flutter_soloud_example/page_3d_audio.dart';
 import 'package:flutter_soloud_example/page_hello_flutter.dart';
 import 'package:flutter_soloud_example/page_multi_track.dart';
-import 'package:flutter_soloud_example/page_visualizer.dart';
 import 'package:flutter_soloud_example/page_waveform.dart';
 import 'package:logging/logging.dart';
 
@@ -81,8 +80,8 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
-      initialIndex: 2,
+      length: 4,
+      initialIndex: 1,
       child: SafeArea(
         child: Scaffold(
           body: Column(
@@ -96,7 +95,6 @@ class MyHomePage extends StatelessWidget {
                   },
                   tabs: const [
                     Tab(text: 'hello world!'),
-                    Tab(text: 'visualizer'),
                     Tab(text: 'multi track'),
                     Tab(text: '3D audio'),
                     Tab(text: 'wave form'),
@@ -109,7 +107,6 @@ class MyHomePage extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   children: [
                     PageHelloFlutterSoLoud(),
-                    PageVisualizer(),
                     PageMultiTrack(),
                     Page3DAudio(),
                     PageWaveform(),

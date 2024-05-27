@@ -1,7 +1,6 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 
-import 'package:flutter_soloud/src/bindings_capture_ffi.dart';
 import 'package:flutter_soloud/src/bindings_player_ffi.dart';
 
 /// Controller that expose method channel and FFI
@@ -22,9 +21,6 @@ class SoLoudController {
   late final FlutterSoLoudFfi soLoudFFI;
 
   ///
-  late final FlutterCaptureFfi captureFFI;
-
-  ///
   void initialize() {
     nativeLib = Platform.isLinux
         ? ffi.DynamicLibrary.open('libflutter_soloud_plugin.so')
@@ -34,6 +30,5 @@ class SoLoudController {
                 ? ffi.DynamicLibrary.open('flutter_soloud_plugin.dll')
                 : ffi.DynamicLibrary.process()));
     soLoudFFI = FlutterSoLoudFfi.fromLookup(nativeLib.lookup);
-    captureFFI = FlutterCaptureFfi.fromLookup(nativeLib.lookup);
   }
 }
