@@ -65,48 +65,54 @@ namespace SoLoud
     ma_device gDevice;
     SoLoud::Soloud *soloud;
 
-    void on_notification(const ma_device_notification* pNotification)
+    void on_notification(const ma_device_notification *pNotification)
     {
         MA_ASSERT(pNotification != NULL);
-        
+
         switch (pNotification->type)
         {
-            case ma_device_notification_type_started:
-            {
-                soloud->_stateChangedCallback(0);
-            }
+        case ma_device_notification_type_started:
+        {
+            soloud->_stateChangedCallback(0);
+        }
+        break;
+
+        case ma_device_notification_type_stopped:
+        {
+            soloud->_stateChangedCallback(1);
+        }
+        break;
+
+        case ma_device_notification_type_rerouted:
+        {
+            soloud->_stateChangedCallback(2);
+        }
+        break;
+
+        case ma_device_notification_type_interruption_began:
+        {
+            soloud->_stateChangedCallback(3);
+        }
+        break;
+
+        case ma_device_notification_type_interruption_ended:
+        {
+            soloud->_stateChangedCallback(4);
+        }
+        break;
+
+        case ma_device_notification_type_unlocked:
+        {
+            soloud->_stateChangedCallback(5);
+        }
+        break;
+
+        default:
             break;
-
-            case ma_device_notification_type_stopped:
-            {
-                soloud->_stateChangedCallback(1);
-            } break;
-
-            case ma_device_notification_type_rerouted:
-            {
-                soloud->_stateChangedCallback(2);
-            } break;
-
-            case ma_device_notification_type_interruption_began:
-            {
-                soloud->_stateChangedCallback(3);
-            } break;
-
-            case ma_device_notification_type_interruption_ended:
-            {
-                soloud->_stateChangedCallback(4);
-            } break;
-
-            case ma_device_notification_type_unlocked:
-            {
-                soloud->_stateChangedCallback(5);
-            } break;
-
-            default: break;
         }
     }
 
-    void soloud_miniaudio_audiomixer(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount)
+    void soloud_miniaudio_audiomixer(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
     {
         SoLoud::Soloud *soloud = (SoLoud::Soloud *)pDevice->pUserData;
         soloud->mix((float *)pOutput, frameCount);
@@ -122,11 +128,14 @@ namespace SoLoud
         soloud = aSoloud;
         ma_device_config config = ma_device_config_init(ma_device_type_playback);
         config.periodSizeInFrames = aBuffer;
-        config.playback.format    = ma_format_f32;
-        config.playback.channels  = aChannels;
-        config.sampleRate         = aSamplerate;
-        config.dataCallback       = soloud_miniaudio_audiomixer;
-        config.pUserData          = (void *)aSoloud;
+        config.playback.format = ma_format_f32;
+        config.playback.channels = aChannels;
+        config.sampleRate = aSamplerate;
+        config.dataCallback = soloud_miniaudio_audiomixer;
+        config.pUserData = (void *)aSoloud;
+        config.opensl.streamType = ma_opensl_stream_type_notification;
+        config.aaudio.contentType = ma_aaudio_content_type_sonification;
+        config.aaudio.usage = ma_aaudio_usage_notification;
         if (aSoloud->_stateChangedCallback != nullptr)
             config.notificationCallback = on_notification;
 
