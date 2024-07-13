@@ -43,6 +43,7 @@ namespace SoLoud
 #else
 
 #include <AudioToolbox/AudioToolbox.h>
+#include <AudioToolbox/AudioSession.h>
 
 #define NUM_BUFFERS 2
 
@@ -61,7 +62,7 @@ namespace SoLoud
 		if (!audioQueue)
 			return UNKNOWN_ERROR;
 
-		AudioQueuePause(audioQueue);			// TODO: Error code
+		AudioQueuePause(audioQueue); // TODO: Error code
 
 		return 0;
 	}
@@ -70,8 +71,8 @@ namespace SoLoud
 	{
 		if (!audioQueue)
 			return UNKNOWN_ERROR;
-	
-		AudioQueueStart(audioQueue, nil);		// TODO: Error code
+
+		AudioQueueStart(audioQueue, nil); // TODO: Error code
 
 		return 0;
 	}
@@ -88,8 +89,8 @@ namespace SoLoud
 
 	static void coreaudio_fill_buffer(void *context, AudioQueueRef queue, AudioQueueBufferRef buffer)
 	{
-		SoLoud::Soloud *aSoloud = (SoLoud::Soloud*)context;
-		aSoloud->mixSigned16((short*)buffer->mAudioData, buffer->mAudioDataByteSize / 4);
+		SoLoud::Soloud *aSoloud = (SoLoud::Soloud *)context;
+		aSoloud->mixSigned16((short *)buffer->mAudioData, buffer->mAudioDataByteSize / 4);
 		AudioQueueEnqueueBuffer(queue, buffer, 0, NULL);
 	}
 
@@ -99,6 +100,10 @@ namespace SoLoud
 		aSoloud->mBackendCleanupFunc = soloud_coreaudio_deinit;
 		aSoloud->mBackendPauseFunc = soloud_coreaudio_pause;
 		aSoloud->mBackendResumeFunc = soloud_coreaudio_resume;
+
+		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(AudioSessionCategory_MediaPlayback), &AudioSessionCategory_MediaPlayback);
+		UInt32 allowMixing = true;
+		AudioSessionSetProperty(kAudioSessionProperty_OverrideCategoryMixWithOthers, sizeof(allowMixing), &allowMixing);
 
 		AudioStreamBasicDescription audioFormat;
 		audioFormat.mSampleRate = aSamplerate;
@@ -113,20 +118,20 @@ namespace SoLoud
 
 		// create the audio queue
 		OSStatus result = AudioQueueNewOutput(&audioFormat, coreaudio_fill_buffer, aSoloud, NULL, NULL, 0, &audioQueue);
-		if(result)
+		if (result)
 		{
-			//printf("AudioQueueNewOutput failed (%d)\n", result);
+			// printf("AudioQueueNewOutput failed (%d)\n", result);
 			return UNKNOWN_ERROR;
 		}
 
 		// allocate and prime audio buffers
-		for(int i = 0; i < NUM_BUFFERS; ++i)
+		for (int i = 0; i < NUM_BUFFERS; ++i)
 		{
 			AudioQueueBufferRef buffer;
 			result = AudioQueueAllocateBuffer(audioQueue, aBuffer * 4, &buffer);
-			if(result)
+			if (result)
 			{
-				//printf("AudioQueueAllocateBuffer failed (%d)\n", result);
+				// printf("AudioQueueAllocateBuffer failed (%d)\n", result);
 				return UNKNOWN_ERROR;
 			}
 			buffer->mAudioDataByteSize = aBuffer * 4;
@@ -136,13 +141,13 @@ namespace SoLoud
 
 		// start playback
 		result = AudioQueueStart(audioQueue, NULL);
-		if(result)
+		if (result)
 		{
-			//printf("AudioQueueStart failed (%d)\n", result);
+			// printf("AudioQueueStart failed (%d)\n", result);
 			return UNKNOWN_ERROR;
 		}
 
-        aSoloud->mBackendString = "CoreAudio";
+		aSoloud->mBackendString = "CoreAudio";
 		return 0;
 	}
 };
